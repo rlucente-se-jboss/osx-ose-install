@@ -170,7 +170,7 @@ Use Existing Disk Image
 -----------------------
 
 You can save some time by simply downloading a pre-built disk image.
-The one that I've created is available here:
+The one that I've created is available here (access is restricted):
 
     https://drive.google.com/drive/folders/0BxHotDs3XvN1fkUwNlVad0dVeGU0ZzBGa1gwRjdVLW1SUDQ3SEh1elF4eTY4X2lWUDJZb28
 
