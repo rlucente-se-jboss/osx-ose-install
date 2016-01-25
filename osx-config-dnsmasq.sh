@@ -5,14 +5,12 @@
 # your environment.  The current values reflect a VMware Fusion
 # installation on OSX with the settings:
 #
-#    192.168.23.139	ose3-master.example.com
+#    192.168.23.140	ose3-master.example.com
 #    192.168.23.141	ose3-node1.example.com
-#    192.168.23.142	ose3-node2.example.com
 #
 
-IP_MASTR=192.168.23.139
+IP_MASTR=192.168.23.140
 IP_NODE1=192.168.23.141
-IP_NODE2=192.168.23.142
 
 # install dnsmasq if it's missing
 if [ "x`brew list | grep dnsmasq`" != "xdnsmasq" ]
@@ -25,8 +23,7 @@ fi
 # configure dnsmasq
 cat > $(brew --prefix)/etc/dnsmasq.conf <<EOF1
 address=/ose3-master.example.com/${IP_MASTR}
-address=/ose3-node1.example.com/${IP_NODE1}
-address=/ose3-node2.example.com/${IP_NODE2}
+address=/ose3-node.example.com/${IP_NODE1}
 address=/.cloudapps.example.com/${IP_MASTR}
 listen-address=127.0.0.1
 EOF1

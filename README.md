@@ -75,55 +75,51 @@ correctly resolve the hostname.  Press CTRL-C to stop the command.
 Configure the OSE v3 Guest VMs
 ------------------------------
 
-For the remaining three machines, you can create everything yourself
-or skip to "Use Existing Disk Image" and download and use an image
-for the base install of the master and nodes.
+For the remaining machines, you can create everything yourself or
+skip to "Use Existing Disk Image" and download and use an image for
+the base install of the master and nodes.
 
 Create The Base Image
 ---------------------
 
 This section walks you through creating a "base" virtual machine
-image that will be used to create the master and the two processing
+image that will be used to create the master and the processing
 nodes.
 
 From the Virtual Machine Library window after launching VMware
-Fusion, click Add->New... and then select "Install from disc or
-image" and press Continue.
+Fusion, click Add->New... and then press Continue.
 
-Make sure that you've downloaded the RHEL 7.1 ISO image.  On the
-Create a New Virtual Machine, select the rhel-server-7.1-x86_64-dvd.iso
+Make sure that you've downloaded the RHEL 7.2 ISO image.  On the
+Create a New Virtual Machine, select the rhel-server-7.2-x86_64-dvd.iso
 image and then press Continue.
 
-Make sure to uncheck "Linux Easy Install" and then press Continue.
+On the "Choose Operating System" screen, select "Red Hat Enterprise
+Linux 7 64-bit" and press Continue.
 
 Click "Customize Settings" and set the Save As to "ose3-base" then
 click Save.
 
 Next, customize the guest VM settings.  Under Processors & Memory
-set Processors to 2 cores and Memory to 4096 MB.  VMware Fusion
+set Processors to 3 cores and Memory to 8192 MB.  VMware Fusion
 will share memory pages among instances of virtual machines when
 running the same versions of the operating system and included
 libraries.  Because of this, you can exceed the physical RAM on
-your system.  My laptop has 16 GB of RAM of which I allocate a total
-of 12 GB to the three virtual machine instances.  At runtime, my
-total consumed RAM for the host OS and all the guest VMs hovers
-around 9 GB.
+your system.
 
 Under Hard Disk, select Advanced options and then uncheck the box
-"Split into multiple files".  Set the hard disk size to 40 GB.
+"Split into multiple files".  Set the hard disk size to 50 GB.
 Close the options and boot the virtual machine.
 
-Install RHEL 7.1 with "Minimal" profile.
+Install RHEL 7.2 with "Minimal" profile.
 
 During the install, click "Installation Destination" option.  Select
-the disk and then click the radio buttion "I will configure
+the disk and then click the radio button "I will configure
 partitioning".  On the Manual Partitioning page, click the link
 "Click here to create them automatically".  Change the settings to
 the following:
 
-    * delete the rhel-home logical volume *
     /boot	500 MiB
-    /		20 GiB
+    /		30 GiB
     swap	2048 MiB
 
 Select the "/" mount point and on the right hand pane click "Modify"
@@ -158,12 +154,18 @@ As root on the guest virtual machine, run the script using:
 
     ./ose3-create-base.sh
 
+The system will switch to the rescue mode run-level in the console
+for the virtual machine.  Follow the instructions when the script
+completes to make the image as compressible as possible.
+
 Once complete, you will have an existing disk image to use when
 creating the other three virtual machines.  Copy the disk image to
 another location so that you can easily reuse it for the master and
 node guest VMs.  On the host, type the commands:
 
     cd ~/Documents/Virtual\ Machines.localized/ose3-base.vmwarevm
+    /Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager -d Virtual\ Disk.vmdk
+    /Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager -k Virtual\ Disk.vmdk
     cp Virtual\ Disk.vmdk ../ose3-base.vmdk
 
 Use Existing Disk Image
@@ -172,7 +174,7 @@ Use Existing Disk Image
 You can save some time by simply downloading a pre-built disk image.
 The one that I've created is available here (access is restricted):
 
-    https://drive.google.com/drive/folders/0BxHotDs3XvN1fkUwNlVad0dVeGU0ZzBGa1gwRjdVLW1SUDQ3SEh1elF4eTY4X2lWUDJZb28
+    https://drive.google.com/open?id=0BxHotDs3XvN1dVVfUHdCaUxRUDQ
 
 in vmdk format.  Simply download, decompress, untar, and then use
 them to create the other three virtual machines.  You can expand
@@ -183,15 +185,14 @@ it using the command:
 Create the guests in the following order:
 
     IP Address		Name
-    192.168.23.142	ose3-node2
-    192.168.23.141	ose3-node1
-    192.168.23.139	ose3-master
+    192.168.23.141	ose3-node
+    192.168.23.140	ose3-master
 
 For each virtual machine, select Add->New... for a new virtual
 machine.
 
-Press "More Options..." then select "Create a custom virtual machine"
-and press Continue.
+Under "Select the Installation Method", select "Create a custom
+virtual machine" and press Continue.
 
 Select Red Hat Enterprise Linux 7 64-bit for the OS then press Continue.
 
@@ -204,7 +205,7 @@ Continue.
 
 Press Customize Settings and the set the name based on the list
 below.  When creating the base virtual machine, under Processors &
-Memory set Processors to 2 cores and Memory to 4096 MB.
+Memory set Processors to 3 cores and Memory to 8192 MB.
 
 Close the settings and start the virtual machine.
 
@@ -213,17 +214,16 @@ and then issue the following commands:
 
     hostnamectl set-hostname <name>
 
-where name is ose3-node2.example.com, ose3-node1.example.com, or
-ose3-master.example.com depending on the system being installed.
+where name is ose3-node.example.com or ose3-master.example.com
+depending on the system being installed.
 
 Edit the network configuration file (typically named
 /etc/sysconfig/network-scripts/ifcfg-e*) and change the value for
 IPADDR.  The modifications are summarized in the following table:
 
     Name		IPADDR
-    ose3-node2		192.168.23.142
-    ose3-node1		192.168.23.141
-    ose3-master		192.168.23.139
+    ose3-node		192.168.23.141
+    ose3-master		192.168.23.140
 
 If your IP subnet is different then the above, you'll need to adjust
 these values now.  Specifically, update the 'nameserver' parameter in
@@ -245,7 +245,6 @@ Run the script on each virtual machine and reboot before installing
 the next virtual machine.
 
 The installation of each guest VM is now complete.  Continue with
-'Run the Installer' at:
-
-    https://github.com/openshift/training/blob/master/02-Installation-and-Scheduler.md
+section 2.3 for Quick Installation and 2.4 for Advanced Installation
+in the [Installation and Configuration Guide](https://access.redhat.com/documentation/en/openshift-enterprise/version-3.1/installation-and-configuration).
 

@@ -5,9 +5,8 @@
 # your environment.  The current values reflect a VMware Fusion
 # installation on OSX with the settings:
 #
-#    192.168.23.139	ose3-master.example.com
-#    192.168.23.141	ose3-node1.example.com
-#    192.168.23.142	ose3-node2.example.com
+#    192.168.23.140	ose3-master.example.com
+#    192.168.23.141	ose3-node.example.com
 #
 
 # Insert your subscription manager pool id here, if known.  Otherwise,
@@ -41,28 +40,21 @@ subscription-manager repos --disable="*"
 subscription-manager repos \
 --enable="rhel-7-server-rpms" \
 --enable="rhel-7-server-extras-rpms" \
---enable="rhel-7-server-optional-rpms" \
---enable="rhel-7-server-ose-3.0-rpms"
+--enable="rhel-7-server-ose-3.1-rpms"
 
 # if this is master
 if [ ! -z "`hostname | grep master`" ]
 then
-  cd
-  git clone https://github.com/openshift/training.git
+  useradd -c "Demo User" demo
 
-  useradd joe
-  useradd alice
-
+  echo "When generating the ssh key, DO NOT SET A PASSWORD!"
   ssh-keygen
 
-  for host in master node1 node2
+  for host in master node
   do
     ssh-copy-id -i ~/.ssh/id_rsa.pub ose3-${host}.example.com
   done
 fi
 
-echo
-echo "Install of `hostname` complete.  Continue with 'Run the Installer' at:"
-echo
-echo "https://github.com/openshift/training/blob/master/02-Installation-and-Scheduler.md"
+echo "Done."
 echo

@@ -1,27 +1,13 @@
 #!/bin/bash
 
-#
-# NB:  Review this script and make sure that IP addresses match
-# your environment.  The current values reflect a VMware Fusion
-# installation on OSX with the settings:
-#
-#    192.168.23.139	ose3-master.example.com
-#    192.168.23.141	ose3-node1.example.com
-#    192.168.23.142	ose3-node2.example.com
-#
-
-# These have to be IP addresses that are compatible with your virtual
-# machine environment.  The following values work for VMware Fusion
-# on OSX, but for libvirt based installs on Linux, you can use "virsh
-# net-dumpxml default" to see what the default network settings are.
-
-IP_MASTR=192.168.23.139
-IP_NODE1=192.168.23.141
-IP_NODE2=192.168.23.142
-
 # Insert your subscription manager pool id here, if known.  Otherwise,
 # this script will try to dynamically determine the pool id.
 SM_POOL_ID=
+
+function pause {
+    echo "Press ENTER to continue"
+    read dummy
+}
 
 echo "Register for system updates"
 subscription-manager register
@@ -50,55 +36,40 @@ subscription-manager repos --disable="*"
 subscription-manager repos \
 --enable="rhel-7-server-rpms" \
 --enable="rhel-7-server-extras-rpms" \
---enable="rhel-7-server-optional-rpms" \
---enable="rhel-7-server-ose-3.0-rpms"
+--enable="rhel-7-server-ose-3.1-rpms"
 
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+# install base packages
+yum -y install wget git net-tools bind-utils iptables-services \
+    bridge-utils bash-completion
 
-# speed up updates
-yum -y install deltarpm
+# update to latest packages
+yum -y update
 
-# do the rest of the yum commands in one transaction
-yum shell <<EOF1
-  config assumeyes yes
-  remove NetworkManager*
-  install wget vim-enhanced net-tools bind-utils tmux git
-  install python-virtualenv gcc
-  install docker
-  update
-  clean all
-  run
-  exit
-EOF1
+# install additional packages
+yum -y install atomic-openshift-utils
+
+# install docker
+yum -y install docker
 
 sed -i \
-'s/^\(OPTIONS='\''--selinux-enabled\).*/\1 --insecure-registry 0.0.0.0\/0'\''/g' /etc/sysconfig/docker
+'s/^\(OPTIONS='\''--selinux-enabled\).*/\1 --insecure-registry 172.30.0.0\/16'\''/g' /etc/sysconfig/docker
+
+# configure docker storage
+cat >> /etc/sysconfig/docker-storage-setup <<EOF1
+DATA_SIZE=100%VG
+EOF1
 
 docker-storage-setup
-systemctl start docker
 
-docker pull registry.access.redhat.com/openshift3/ose-haproxy-router:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/ose-deployer:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/ose-sti-builder:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/ose-docker-builder:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/ose-pod:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/ose-docker-registry:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/ose-keepalived-ipfailover:v3.0.1.0
+# verify that the docker thinpool is enabled
+cat /etc/sysconfig/docker-storage
+lvs
+pause
 
-docker pull registry.access.redhat.com/openshift3/ruby-20-rhel7:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/mysql-55-rhel7:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/php-55-rhel7:v3.0.1.0
-docker pull registry.access.redhat.com/jboss-eap-6/eap-openshift:6.4
-docker pull registry.access.redhat.com/openshift/hello-openshift
-
-docker pull registry.access.redhat.com/jboss-amq-6/amq-openshift:6.2
-docker pull registry.access.redhat.com/openshift3/mongodb-24-rhel7:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/postgresql-92-rhel7:v3.0.1.0
-docker pull registry.access.redhat.com/jboss-webserver-3/tomcat8-openshift:3.0
-docker pull registry.access.redhat.com/jboss-webserver-3/tomcat7-openshift:3.0
-docker pull registry.access.redhat.com/openshift3/nodejs-010-rhel7:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/python-33-rhel7:v3.0.1.0
-docker pull registry.access.redhat.com/openshift3/perl-516-rhel7:v3.0.1.0
+# re-initialize docker
+systemctl stop docker
+rm -rf /var/lib/docker/*
+systemctl restart docker
 
 # now unregister from RHSM
 subscription-manager unregister
@@ -110,13 +81,18 @@ do
     sed -i '/^UUID/d' $cfg
 done
 
-# make the image very compressible by zeroing all unused bytes
-pushd /
-sync; sync; cat /dev/zero > zerofill; sync; sync; rm -f zerofill; sync; sync
-cd /boot
-sync; sync; cat /dev/zero > zerofill; sync; sync; rm -f zerofill; sync; sync
-popd
+# switch to single user mode
+echo "System should be in rescue mode in the console.  Provide root"
+echo "password when prompted.  Make the image very compressible by zeroing"
+echo "all unused bytes:"
+echo
+echo "    cd /"
+echo "    sync; sync; cat /dev/zero > zerofill; sync; sync"
+echo "    rm zerofill; sync; sync"
+echo "    cd /boot"
+echo "    sync; sync; cat /dev/zero > zerofill; sync; sync"
+echo "    rm zerofill; sync; sync"
+echo "    shutdown"
+echo
 
-echo
-echo Base image has been created.
-echo
+systemctl isolate rescue.target
