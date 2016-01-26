@@ -47,6 +47,9 @@ if [ ! -z "`hostname | grep master`" ]
 then
   useradd -c "Demo User" demo
 
+  echo "Set the password for user 'demo'"
+  passwd demo
+
   echo "When generating the ssh key, DO NOT SET A PASSWORD!"
   ssh-keygen
 

@@ -237,6 +237,8 @@ and update the 'IPADDR', 'GATEWAY', and 'DNS1' parameters in
 Reboot the system when finished so the IP address and hostname
 changes are now in effect.
 
+Prepare for OSE Installation
+----------------------------
 Copy ose3-install.sh to each virtual machine after installing:
 
     scp ose3-install.sh root@<ip-addr>:
@@ -244,7 +246,66 @@ Copy ose3-install.sh to each virtual machine after installing:
 Run the script on each virtual machine and reboot before installing
 the next virtual machine.
 
-The installation of each guest VM is now complete.  Continue with
-section 2.3 for Quick Installation and 2.4 for Advanced Installation
-in the [Installation and Configuration Guide](https://access.redhat.com/documentation/en/openshift-enterprise/version-3.1/installation-and-configuration).
+Each guest VM is now ready to install OSE 3. Continue with section
+2.3 for Quick Installation and 2.4 for Advanced Installation in the
+[Installation and Configuration Guide](https://access.redhat.com/documentation/en/openshift-enterprise/version-3.1/installation-and-configuration).
+
+Post OSE Installation
+---------------------
+
+Edit the file /etc/origin/master/master-config.yaml and change the
+following stanza:
+
+    authConfig:
+      assetPublicURL: https://ose3-master.example.com:8443/console/
+      grantConfig:
+        method: auto
+      identityProviders:
+      - challenge: true
+        login: true
+        name: allow_all
+        provider:
+          apiVersion: v1
+          kind: AllowAllPasswordIdentityProvider
+          mappingMethod: claim
+
+The AllowAllPasswordIdentityProvider will enable any username/password
+to be used to authenticate to OSE.  This is useful for demonstration
+purposes.  Restart the master service so this change takes effect.
+
+    systemctl restart atomic-openshift-master
+
+Make the master schedulable so that we can deploy the router service
+and docker registry to it.
+
+    oadm manage-node ose3-master.example.com --schedulable
+    oc label node ose3-master.example.com region=infra
+
+Deploy the docker-registry using the following:
+
+    oadm registry --config=/etc/origin/master/admin.kubeconfig \
+        --credentials=/etc/origin/master/openshift-registry.kubeconfig \
+        --selector='region=infra' \
+        --images='registry.access.redhat.com/openshift3/ose-${component}:${version}'
+
+This will take a minute or so.  Afterwards, the docker-registy pod
+will be deployed to the master node.
+
+Deploy the router service using the following:
+
+    oadm router --credentials='/etc/origin/master/openshift-router.kubeconfig' \
+        --service-account=router \
+        --selector='region=infra'
+
+Edit the file /etc/origin/master/master-config.yaml and change the
+following stanza to set the default routing subdomain:
+
+    routingConfig:
+      subdomain:  "cloudapps.example.com"
+
+The routingConfig will set the default subdomain that is appended
+when external routes are created for applications.  Restart the
+master service so this change takes effect.
+
+    systemctl restart atomic-openshift-master
 
