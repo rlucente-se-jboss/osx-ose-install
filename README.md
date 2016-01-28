@@ -309,3 +309,7 @@ master service so this change takes effect.
 
     systemctl restart atomic-openshift-master
 
+To enable the Fuse application templates, issue the command as root:
+
+    oc create -n openshift \
+        -f https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json
