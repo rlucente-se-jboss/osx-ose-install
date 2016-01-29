@@ -174,7 +174,7 @@ Use Existing Disk Image
 You can save some time by simply downloading a pre-built disk image.
 The one that I've created is available here (access is restricted):
 
-    https://drive.google.com/open?id=0BxHotDs3XvN1dVVfUHdCaUxRUDQ
+    https://drive.google.com/open?id=0BxHotDs3XvN1NFdhQVdfcVl6S1E
 
 in vmdk format.  Simply download, decompress, untar, and then use
 them to create the other three virtual machines.  You can expand
