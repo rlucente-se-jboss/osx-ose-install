@@ -335,12 +335,12 @@ a softlink to /usr/local/bin to add oc to your command search path:
 Using oc CLI
 ------------
 
-For some reason, the resolver configuration in OSX is not working
-so the command:
+The resolver configuration in OSX is ignored by certain system calls
+used by go, so the following command will not work:
 
     oc login ose3-master.example.com:8443 --insecure-skip-tls-verify -u demo
 
-will fail.  However, the following command with the IP address will
-work:
+However, this command with the IP address will work:
 
     oc login 192.168.23.140:8443 --insecure-skip-tls-verify -u demo
+
