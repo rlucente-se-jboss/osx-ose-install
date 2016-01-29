@@ -313,3 +313,22 @@ To enable the Fuse application templates, issue the command as root:
 
     oc create -n openshift \
         -f https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json
+
+Install OpenShift v3.1 Linux Client on OSX
+------------------------------------------
+
+Download the client from the [OpenShift Product Software page](https://access.redhat.com/downloads/content/290/ver=3.1/rhel---7/3.1.1.6/x86_64/product-software).  Make
+sure to grab the appropriate version.
+
+Expand the contents into a temporary directory then copy to /usr/share:
+
+    cd /tmp
+    tar zxf ~/Downloads/oc-3.1.1.6-macosx.tar.gz
+    cd mnt/redhat/staging-cds/ose-clients-3.1.1.6/usr/share
+    sudo cp -r atomic-openshift /usr/share
+
+Since you have brew installed (or you *SHOULD*) then simply create
+a softlink to /usr/local/bin to add oc to your command search path:
+
+    ln -s /usr/share/atomic-openshift/macosx/oc /usr/local/bin
+
