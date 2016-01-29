@@ -247,7 +247,7 @@ Run the script on each virtual machine and reboot before installing
 the next virtual machine.
 
 Each guest VM is now ready to install OSE 3. Continue with section
-2.3 for Quick Installation and 2.4 for Advanced Installation in the
+2.4 for Quick Installation and 2.5 for Advanced Installation in the
 [Installation and Configuration Guide](https://access.redhat.com/documentation/en/openshift-enterprise/version-3.1/installation-and-configuration).
 
 Post OSE Installation
