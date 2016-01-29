@@ -71,6 +71,11 @@ systemctl stop docker
 rm -rf /var/lib/docker/*
 systemctl restart docker
 
+# set up clock synchronization
+yum -y install chrony
+systemctl start chronyd
+systemctl enable chronyd
+
 # now unregister from RHSM
 subscription-manager unregister
 
