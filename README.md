@@ -314,6 +314,19 @@ To enable the Fuse application templates, issue the command as root:
     oc create -n openshift \
         -f https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json
 
+Enable Logging with EFK Stack
+-----------------------------
+
+I borrowed heavily from Jim Minter's demobuilder project for a
+vagrant OSE all-in-one virtual machine.  The original scripts are
+located [here](https://github.com/RedHatEMEA/demobuilder/tree/master/layers/rhel-server-7:gui:ose-3.1/%40target).
+
+To enable the EFK stack, do the following:
+
+    scp install-logging.sh server-tls.json root@ose3-master.example.com:
+    ssh root@ose3-master.example.com
+    ./install-logging.sh
+
 Install OpenShift v3.1 Linux Client on OSX
 ------------------------------------------
 
