@@ -25,6 +25,7 @@ cat > $(brew --prefix)/etc/dnsmasq.conf <<EOF1
 address=/ose3-master.example.com/${IP_MASTR}
 address=/kibana.example.com/${IP_MASTR}
 address=/kibana-ops.example.com/${IP_MASTR}
+address=/hawkular-metrics.example.com/${IP_MASTR}
 address=/ose3-node.example.com/${IP_NODE1}
 address=/.cloudapps.example.com/${IP_MASTR}
 listen-address=127.0.0.1
