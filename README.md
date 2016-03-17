@@ -301,7 +301,7 @@ Edit the file /etc/origin/master/master-config.yaml and change the
 following stanza to set the default routing subdomain:
 
     routingConfig:
-      subdomain:  "cloudapps.example.com"
+      subdomain:  "apps.example.com"
 
 The routingConfig will set the default subdomain that is appended
 when external routes are created for applications.  Restart the
