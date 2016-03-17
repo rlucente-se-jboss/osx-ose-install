@@ -9,6 +9,9 @@ function pause {
     read dummy
 }
 
+echo "Set SELINUXTYPE to targeted"
+sed -i 's/^\(SELINUXTYPE=\)..*/\1targeted/g' /etc/selinux/config
+
 echo "Register for system updates"
 subscription-manager register
 
@@ -67,6 +70,7 @@ lvs
 pause
 
 # re-initialize docker
+systemctl enable docker
 systemctl stop docker
 rm -rf /var/lib/docker/*
 systemctl restart docker
